@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utaba", "Utaba\Utaba.csproj", "{9898511C-D89C-4BC0-995B-2DD844B8026E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtabaUI", "UtabaUI\UtabaUI.csproj", "{995F00F3-1A17-42BB-86DC-BCBCEB57B6BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{49BF6AB9-128E-42DA-B126-F5F3B72040D1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9898511C-D89C-4BC0-995B-2DD844B8026E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9898511C-D89C-4BC0-995B-2DD844B8026E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9898511C-D89C-4BC0-995B-2DD844B8026E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9898511C-D89C-4BC0-995B-2DD844B8026E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{995F00F3-1A17-42BB-86DC-BCBCEB57B6BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{995F00F3-1A17-42BB-86DC-BCBCEB57B6BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{995F00F3-1A17-42BB-86DC-BCBCEB57B6BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{995F00F3-1A17-42BB-86DC-BCBCEB57B6BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49BF6AB9-128E-42DA-B126-F5F3B72040D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49BF6AB9-128E-42DA-B126-F5F3B72040D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49BF6AB9-128E-42DA-B126-F5F3B72040D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49BF6AB9-128E-42DA-B126-F5F3B72040D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
