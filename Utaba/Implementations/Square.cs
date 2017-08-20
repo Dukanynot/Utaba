@@ -2,6 +2,9 @@
 
 namespace Utaba.Implementations
 {
+    /// <summary>
+    /// An instance of the square on a chess board
+    /// </summary>
     internal class Square : ISquare
     {
         readonly private byte _columnIndex;
