@@ -16,29 +16,24 @@ namespace Utaba.Implementations.Pieces
             _status = PieceStatus.Active;
         }
         // each piece should implement its move
-        abstract public void Move();
+        public abstract void Move();
 
         #region Properties
 
-        public PieceType WhoAmI
-        {
-            get { return _whoAmI; }
-        }
+        public PieceType WhoAmI => _whoAmI;
+
         public ISquare MyLocation
         {
-            get { return _location; }
-            set { _location = value; }
+            get => _location;
+            set => _location = value;
         }
 
-        public Teams MyTeam
-        {
-            get { return _team; }
-        }
+        public Teams MyTeam => _team;
 
         public PieceStatus MyStatus
         {
-            get { return _status; }
-            set { _status = value; }
+            get => _status;
+            set => _status = value;
         }
         #endregion
     }

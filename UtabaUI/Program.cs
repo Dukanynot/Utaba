@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Utaba.Interfaces;
 using Utaba.Implementations;
-using Utaba;
 
 
 namespace UtabaUI
@@ -10,8 +8,8 @@ namespace UtabaUI
     class Program
     {
        // static private List<ISquare> _listofSquares;
-        static private List<IPiece> _listOfPieces;
-        static void Main(string[] args)
+        private static List<IPiece> _listOfPieces;
+        static void Main()
         {
             var board = new Board();
             _listOfPieces = board.ListOfPieces;
