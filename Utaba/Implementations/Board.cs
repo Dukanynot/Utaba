@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Utaba.Interfaces;
 using Utaba.Implementations.Pieces;
+using Utaba.Factories;
 using System.Text.RegularExpressions;
 
 namespace Utaba.Implementations
@@ -27,28 +28,30 @@ namespace Utaba.Implementations
         #endregion
 
         #region Public Methods
-        public IMoveResponse RequestMove(IPiece piece, string destination)
+        public IMoveResponse RequestMove(string destination)
         {
             IMoveResponse imr = null;
 
             try
             {
                 // only make a move if it is the right team's turn
-                if (piece.MyTeam == _whosMove)
+
+                // checks to make sure the destination is in the right 
+                // chess notation
+                // TODO: Really have to integrate with a GUI that uses standard notation / PGN
+                if (destination.Length == 2
+                    && Regex.IsMatch(destination, @"[a-hA-H]{1}[1-8]{1}"))
                 {
-                    // checks to make sure the destination is in the right 
-                    // chess notation
-                    // TODO: implement notation to cover for check and Castling 
-                    if (destination.Length == 2
-                        && Regex.IsMatch(destination, @"[a-hA-H]{1}[1-8]{1}"))
+                    int destinationColumn = Square.ColumnIndexByChar(destination[0]);
+                    int destinationRow = int.Parse(destination.Substring(1, 1));
+
+                    // get the actual square this string destination represents
+                    var destSquare = GetSquares(s => s.ColumnIndex == destinationColumn
+                                                     && s.RowIndex == destinationRow - 1).Single();
+
+                    var piece = GetPawnForThisSquare(destSquare, _whosMove);
+                    if (piece?.MyTeam == _whosMove)
                     {
-                        int destinationColumn = Square.ColumnIndexByChar(destination[0]);
-                        int destinationRow = int.Parse(destination.Substring(1, 1));
-
-                        // get the actual square this string destination represents
-                        var destSquare = GetSquares(s => s.ColumnIndex == destinationColumn
-                                           && s.RowIndex == destinationRow - 1).Single();
-
                         switch (piece.WhoAmI)
                         {
                             case PieceType.King:
@@ -68,18 +71,18 @@ namespace Utaba.Implementations
                     }
                     else
                     {
-                        throw new Exception("Can't pass me a null Chess Piece\n Also check the destination notation");
+                        imr = new MoveResponse
+                        {
+                            SuccessfulMove = false,
+                            Message = "Invalid Move!!!"
+                        };
                     }
                 }
                 else
                 {
-
-                    imr = new MoveResponse
-                    {
-                        SuccessfulMove = false,
-                        Message = "It is not your turn to move!"
-                    };
+                    throw new Exception("Can't pass me a null Chess Piece\n Also check the destination notation");
                 }
+
             }
             catch (Exception ex)
             {
@@ -87,8 +90,9 @@ namespace Utaba.Implementations
                 throw;
             }
 
+            _whosMove = _whosMove == Teams.White ? Teams.Black : Teams.White;
             return imr;
-        } 
+        }
         #endregion
 
         #region Properties
@@ -97,12 +101,42 @@ namespace Utaba.Implementations
         //    get { return _listofSquares; }
         //}
 
-        public List<IPiece> ListOfPieces => _listofPieces;
+      //  public List<IPiece> ListOfPieces => _listofPieces;
 
         #endregion
 
         #region Private Methods
 
+        /// <summary>
+        /// Returns a pawn that can move into the square given
+        /// </summary>
+        /// <param name="square"></param>
+        /// <param name="team"></param>
+        /// <returns></returns>
+        private IPiece GetPawnForThisSquare(ISquare square, Teams team)
+        {
+            // get the list of pawns for this team
+            var listOfPawns = GetPieces(p => p.MyTeam == team && p.WhoAmI == PieceType.Pawn).ToList();
+            bool isOk = true;
+            IPiece pawnToMove = null;
+
+            // for every pawn returned...
+            for (int i = 0; isOk && i < listOfPawns.Count; i++)
+            {
+                if (listOfPawns[i] is Pawn pawn)
+                {
+                    // ... get all the valid squares it can go to
+                    var listofSquares = GetValidPawnSquares(pawn);
+                    if (listofSquares.Contains(square))
+                    {
+                        isOk = false;
+                        pawnToMove = pawn;
+                    }
+                }
+
+            }
+            return pawnToMove;
+        }
         private bool CanAKingAttackSquare(ISquare square, Teams team)
         {
             Teams enemyColor = team == Teams.White ? Teams.Black : Teams.White;
@@ -321,21 +355,18 @@ namespace Utaba.Implementations
         /// <returns></returns>
         private bool IsKingCheckMate(Teams team)
         {
+            // TODO check for Run, Block Capture
             bool isCheckMate = false;
 
-            var king = GetPieces(p => p.WhoAmI == PieceType.King && p.MyTeam == team).Single() as King;
-            if (king != null)
+            if (GetPieces(p => p.WhoAmI == PieceType.King && p.MyTeam == team).Single() is King king)
             {
-                // Get all the valid squares a king can go to
+                // RUN
+                // Get all the valid squares a king can run to
                 var kingSquares = GetValidKingSquares(king);
 
                 // check if all these squares are attackable 
                 isCheckMate = CheckAllLocations(kingSquares, team);
-
-
-                // return true if all the squares are attackable
             }
-
             return isCheckMate;
         }
         /// <summary>
@@ -415,13 +446,15 @@ namespace Utaba.Implementations
         private List<ISquare> GetValidKingSquares(King king)
         {
             var listofValidSquares = new List<ISquare>();
+
+            // get squares that are empty or occupied by the enemy
             var validSquares = GetSquares(s =>
-                                           (Math.Abs(s.ColumnIndex - king.MyLocation.ColumnIndex) == 1 &&
-                                           Math.Abs(s.RowIndex - king.MyLocation.RowIndex) == 1)
+                                           Math.Abs(s.ColumnIndex - king.MyLocation.ColumnIndex) == 1 &&
+                                           Math.Abs(s.RowIndex - king.MyLocation.RowIndex) == 1 && (!s.Occupied || WhosOnThisSquare(s)?.MyTeam != king.MyTeam) 
                                            ||
-                                           (s.ColumnIndex == king.MyLocation.ColumnIndex && Math.Abs(s.RowIndex - king.MyLocation.RowIndex) == 1)
+                                           s.ColumnIndex == king.MyLocation.ColumnIndex && Math.Abs(s.RowIndex - king.MyLocation.RowIndex) == 1 && (!s.Occupied || WhosOnThisSquare(s)?.MyTeam != king.MyTeam)
                                            ||
-                                           (s.RowIndex == king.MyLocation.RowIndex && Math.Abs(s.ColumnIndex - king.MyLocation.ColumnIndex) == 1)
+                                           s.RowIndex == king.MyLocation.RowIndex && Math.Abs(s.ColumnIndex - king.MyLocation.ColumnIndex) == 1 && (!s.Occupied || WhosOnThisSquare(s)?.MyTeam != king.MyTeam)
                                            );
 
 
@@ -465,25 +498,36 @@ namespace Utaba.Implementations
                                             && s.RowIndex == pawn.MyLocation.RowIndex + forwardToken
                                             && s.Occupied && WhosOnThisSquare(s)?.MyTeam == enemyColor));
             listofValidSquares.AddRange(captureSquares);
+
+            // TODO: Check for en pessant squares
             return listofValidSquares;
         }
         private IMoveResponse PawnMoveHandler(Pawn pawn, ISquare destSquare)
         {
+            /* TODO: look into making this a private variable that is 
+               assigned when a move request is received*/
             Teams enemyColor = pawn.MyTeam == Teams.White ? Teams.Black : Teams.White;
 
             var imr = new MoveResponse();
 
             // gets list of squares this pawn can legally move to
-            var lst = GetValidPawnSquares(pawn);
+            var listOfValidPawnSquares = GetValidPawnSquares(pawn);
 
-            if (lst.Contains(destSquare))
+            if (listOfValidPawnSquares.Contains(destSquare))
             {
-                pawn.MyLocation.Occupied = false;
-                var holdMySquare = pawn.MyLocation;
-
                 // TODO: En passant, Capture, promotion, destination square occupant status
                 // TODO: Make sure the team making the move is not in check
-                destSquare.Occupied = true;
+
+                var startSquare = pawn.MyLocation;
+
+                // only adjust the occupied status of the destination square if there is no enemy piece on it
+                var enemyPiece = WhosOnThisSquare(destSquare, enemyColor);
+                if (enemyPiece == null)
+                {
+                    destSquare.Occupied = true;
+                }
+
+                pawn.MyLocation.Occupied = false;
                 pawn.MyLocation = destSquare;
 
                // Will this move result in the King being under check
@@ -491,30 +535,31 @@ namespace Utaba.Implementations
                 {
                     // ...if the move would result in an exposed check of its own king
                     // ...cancel the move
-                    pawn.MyLocation = holdMySquare;
+                    pawn.MyLocation = startSquare;
                     pawn.MyLocation.Occupied = true;
-                    destSquare.Occupied = false;
-                    imr.Message = $"Invalid move: Exposed Check!";
+                    if (enemyPiece == null)
+                    {
+                        destSquare.Occupied = false;
+                    }
+                    imr.Message = "Invalid move: Exposed Check!";
+                    imr.SuccessfulMove = false;
                 }
                 else // not an exposed check move
                 {
-                    // is this a regular move or a capture
-                    var piece = WhosOnThisSquare(destSquare);
+                    // is this a regular move or a capture...find out if there is an enemy on this square
+                   // var piece = WhosOnThisSquare(destSquare, enemyColor);
 
-                    if (piece != null) // capture
+                    if (enemyPiece != null) // capture
                     {
-                        // deactivate piece that is about to be captured
-                        pawn.MyLocation.Occupied = false;
-                        destSquare.Occupied = true;
-                        pawn.MyLocation = destSquare;
-                        piece.MyStatus = PieceStatus.Captured;
-
+                        // deactivate the piece that is about to be captured
+                        enemyPiece.MyStatus = PieceStatus.Captured;
+                        enemyPiece.MyLocation = null;
 
                         var isKingInCheck = IsKingInCheck(enemyColor);
                         // see if this move will result in a checkmate...check or stalemate
                         if (isKingInCheck && IsKingCheckMate(enemyColor))
                         {
-                            imr.Message = $"{enemyColor} has lost the game";
+                            imr.Message = $"{pawn.MyTeam} has won the game";
                         }
                         else if (isKingInCheck)
                         {
@@ -527,11 +572,30 @@ namespace Utaba.Implementations
                         }
 
                     }
-                    else // regular move
+                    else // regular move / En Passant
                     {
-                        pawn.MyLocation.Occupied = false;
-                        destSquare.Occupied = true;
-                        pawn.MyLocation = destSquare;                        
+                        // En Passant
+                        if (Math.Abs(startSquare.RowIndex - destSquare.RowIndex) == 2)
+                        {
+                            var enPassantSquare = GetSquares(s => s.ColumnIndex == startSquare.ColumnIndex &&
+                                                                  Math.Abs(s.RowIndex - startSquare.RowIndex) == 1 && 
+                                                                  Math.Abs(s.RowIndex - destSquare.RowIndex) == 1).Single();
+                            if (CanAPawnAttackSquare(enPassantSquare, pawn.MyTeam))
+                            {
+                                imr.Message = $"{enPassantSquare.ColumnLetter}{enPassantSquare.RowIndex + 1} is an en passant square";
+                            }
+                            else
+                            {
+                                imr.Message = $"{destSquare.ColumnLetter}{destSquare.RowIndex + 1} move was successful";
+
+                            }
+                        }
+                        else // regular move
+                        {
+                            imr.Message = $"{destSquare.ColumnLetter}{destSquare.RowIndex + 1} move was successful";
+
+                        }
+
                     }
 
                     if (!pawn.HasMoved)
@@ -549,9 +613,27 @@ namespace Utaba.Implementations
 
             return imr;
         }
+
+        /// <summary>
+        /// Returns any chess piece on the square provided
+        /// </summary>
+        /// <param name="square"></param>
+        /// <returns></returns>
         private ChessPiece WhosOnThisSquare(ISquare square)
         {
-            var piece = _listofPieces.Where(p => p.MyLocation == square).SingleOrDefault();
+            var piece = _listofPieces.SingleOrDefault(p => p.MyLocation == square);
+            return piece as ChessPiece;
+        }
+
+        /// <summary>
+        /// Returns an enemy chess piece on the square provided
+        /// </summary>
+        /// <param name="square"></param>
+        /// <param name="enemyColor"></param>
+        /// <returns></returns>
+        private ChessPiece WhosOnThisSquare(ISquare square, Teams enemyColor)
+        {
+            var piece = _listofPieces.SingleOrDefault(p => p.MyLocation == square && p.MyTeam == enemyColor);
             return piece as ChessPiece;
         }
 
@@ -581,18 +663,18 @@ namespace Utaba.Implementations
         private void InitializeKings()
         {
             // create White King 
-            CreateChessPiece(Teams.White, GetSquares(s => (s.ColumnIndex == 4 && s.RowIndex == 0)), PieceType.King);
+            CreateChessPieces(Teams.White, GetSquares(s => (s.ColumnIndex == 4 && s.RowIndex == 0)), PieceType.King);
 
             // create Black King
-            CreateChessPiece(Teams.Black, GetSquares(s => (s.ColumnIndex == 4 && s.RowIndex == 7)), PieceType.King);
+            CreateChessPieces(Teams.Black, GetSquares(s => (s.ColumnIndex == 4 && s.RowIndex == 7)), PieceType.King);
         }
         private void InitializeQueens()
         {
             // create White Queen 
-            CreateChessPiece(Teams.White, GetSquares(s => (s.ColumnIndex == 3 && s.RowIndex == 0)), PieceType.Queen);
+            CreateChessPieces(Teams.White, GetSquares(s => (s.ColumnIndex == 3 && s.RowIndex == 0)), PieceType.Queen);
 
             // create Black Queen
-            CreateChessPiece(Teams.Black, GetSquares(s => (s.ColumnIndex == 3 && s.RowIndex == 7)), PieceType.Queen);
+            CreateChessPieces(Teams.Black, GetSquares(s => (s.ColumnIndex == 3 && s.RowIndex == 7)), PieceType.Queen);
         }
 
         private void InitializeBishops()
@@ -600,12 +682,12 @@ namespace Utaba.Implementations
             // create White Bishops
             var whiteBishopSquares = GetSquares(s => (s.ColumnIndex == 2 && s.RowIndex == 0) ||
                                         (s.ColumnIndex == 5 && s.RowIndex == 0));
-            CreateChessPiece(Teams.White, whiteBishopSquares, PieceType.Bishop);
+            CreateChessPieces(Teams.White, whiteBishopSquares, PieceType.Bishop);
 
             // create Black Bishops
             var blackBishopSquares = GetSquares(s => (s.ColumnIndex == 2 && s.RowIndex == 7) ||
                                         (s.ColumnIndex == 5 && s.RowIndex == 7));
-            CreateChessPiece(Teams.Black, blackBishopSquares, PieceType.Bishop);
+            CreateChessPieces(Teams.Black, blackBishopSquares, PieceType.Bishop);
         }
 
         private void InitializeKnights()
@@ -613,62 +695,43 @@ namespace Utaba.Implementations
             // create White Knights
             var whiteKnightSquares = GetSquares(s => (s.ColumnIndex == 1 && s.RowIndex == 0) ||
                                         (s.ColumnIndex == 6 && s.RowIndex == 0));
-            CreateChessPiece(Teams.White, whiteKnightSquares, PieceType.Knight);
+            CreateChessPieces(Teams.White, whiteKnightSquares, PieceType.Knight);
 
             // create Black Knights
             var blackKnightSquares = GetSquares(s => (s.ColumnIndex == 1 && s.RowIndex == 7) ||
                                         (s.ColumnIndex == 6 && s.RowIndex == 7));
-            CreateChessPiece(Teams.Black, blackKnightSquares, PieceType.Knight);
+            CreateChessPieces(Teams.Black, blackKnightSquares, PieceType.Knight);
         }
         private void InitializeRooks()
         {
             // Create White Rooks
             var whiteRookSquares = GetSquares(s => (s.ColumnIndex == 0 && s.RowIndex == 0) ||
                          (s.ColumnIndex == 7 && s.RowIndex == 0));
-            CreateChessPiece(Teams.White, whiteRookSquares, PieceType.Rook);
+            CreateChessPieces(Teams.White, whiteRookSquares, PieceType.Rook);
 
             // Create Black Rooks
             var blackRookSquares = GetSquares(s => (s.ColumnIndex == 0 && s.RowIndex == 7) ||
                                    (s.ColumnIndex == 7 && s.RowIndex == 7));
 
-            CreateChessPiece(Teams.Black, blackRookSquares, PieceType.Rook);
+            CreateChessPieces(Teams.Black, blackRookSquares, PieceType.Rook);
         }
 
         private void InitializePawns()
         {
             // initialize all the white pawns...they start on row index 1 (rank 2...row 2)
-            CreateChessPiece(Teams.White, GetSquares(s => s.RowIndex == 1), PieceType.Pawn);
+            CreateChessPieces(Teams.White, GetSquares(s => s.RowIndex == 1), PieceType.Pawn);
 
             // initialize all the black pawns...they start on row index 6 (rank 7...row 7)
-            CreateChessPiece(Teams.Black, GetSquares(s => s.RowIndex == 6), PieceType.Pawn);
+            CreateChessPieces(Teams.Black, GetSquares(s => s.RowIndex == 6), PieceType.Pawn);
         }
 
-        private void CreateChessPiece(Teams team, IEnumerable<ISquare> squares, PieceType pieceType)
+        private void CreateChessPieces(Teams team, IEnumerable<ISquare> squares, PieceType pieceType)
         {
             foreach (var square in squares)
             {
                 square.Occupied = true;
-                switch (pieceType)
-                {
-                    case PieceType.King:
-                        _listofPieces.Add(new King(square, team));
-                        break;
-                    case PieceType.Queen:
-                        _listofPieces.Add(new Queen(square, team));
-                        break;
-                    case PieceType.Bishop:
-                        _listofPieces.Add(new Bishop(square, team));
-                        break;
-                    case PieceType.Knight:
-                        _listofPieces.Add(new Knight(square, team));
-                        break;
-                    case PieceType.Rook:
-                        _listofPieces.Add(new Rook(square, team));
-                        break;
-                    case PieceType.Pawn:
-                        _listofPieces.Add(new Pawn(square, team));
-                        break;
-                }
+                IPiece piece = CreateChessPiece.GetChessPiece(team, square, pieceType);
+                _listofPieces.Add(piece);
             }
         }
 

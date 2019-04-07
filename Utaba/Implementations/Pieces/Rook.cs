@@ -8,7 +8,7 @@ namespace Utaba.Implementations.Pieces
         public Rook(ISquare location, Teams team)
             : base(team, location)
         {
-            _whoAmI = PieceType.Rook;
+            whoAmI = PieceType.Rook;
         }
 
         public override void Move()

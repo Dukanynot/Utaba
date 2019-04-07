@@ -4,36 +4,36 @@ namespace Utaba.Implementations.Pieces
 {
     internal abstract class ChessPiece : IPiece
     {
-        protected ISquare _location;
-        protected readonly Teams _team;
-        protected PieceStatus _status;
-        protected PieceType _whoAmI;
+        protected ISquare Location;
+        protected readonly Teams Team;
+        protected PieceStatus Status;
+        protected PieceType whoAmI;
 
         protected ChessPiece(Teams team, ISquare location)
         {
-            _team = team;
-            _location = location;
-            _status = PieceStatus.Active;
+            Team = team;
+            Location = location;
+            Status = PieceStatus.Active;
         }
         // each piece should implement its move
         public abstract void Move();
 
         #region Properties
 
-        public PieceType WhoAmI => _whoAmI;
+        public PieceType WhoAmI => whoAmI;
 
         public ISquare MyLocation
         {
-            get => _location;
-            set => _location = value;
+            get => Location;
+            set => Location = value;
         }
 
-        public Teams MyTeam => _team;
+        public Teams MyTeam => Team;
 
         public PieceStatus MyStatus
         {
-            get => _status;
-            set => _status = value;
+            get => Status;
+            set => Status = value;
         }
         #endregion
     }

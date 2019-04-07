@@ -21,7 +21,8 @@
     public enum PieceStatus : byte
     {
         Captured = 0,
-        Active = 1
+        Active = 1,
+        Promoted = 2
     }
 
     public enum PieceType : byte
