@@ -10,9 +10,9 @@ namespace Utaba.Interfaces
 
         Teams MyTeam { get;}
 
-        ISquare MyLocation { get; }
+        ISquare MyLocation { get; set; }
 
-        PieceStatus MyStatus { get;}
+        PieceStatus MyStatus { get; set; }
 
         PieceType WhoAmI { get;}
     }
