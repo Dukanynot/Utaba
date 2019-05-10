@@ -41,7 +41,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums.cs" />
-    <Compile Include="Implementations\Board.cs" />
+    <Compile Include="Factories\AbstractFactories\ValidSquaresStrategyAbstractFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\BishopFactory.cs" />
+    <Compile Include="Factories\AbstractFactories\ChessMoveStrategyAbstractFactory.cs" />
+    <Compile Include="Factories\AbstractFactories\ChessPieceAbstractFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\KingFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\KnightFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\PawnFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\QueenFactory.cs" />
+    <Compile Include="Factories\ObjectFactories\RookFactory.cs" />
+    <Compile Include="Implementations\ChessBoard.cs" />
+    <Compile Include="Implementations\Proxies\ChessBoardProxy.cs" />
+    <Compile Include="Implementations\Strategies\MoveStrategies\PawnMoveStrategy.cs" />
     <Compile Include="Implementations\MoveResponse.cs" />
     <Compile Include="Implementations\Pieces\Bishop.cs" />
     <Compile Include="Implementations\Pieces\ChessPiece.cs" />
@@ -51,10 +62,17 @@
     <Compile Include="Implementations\Pieces\Queen.cs" />
     <Compile Include="Implementations\Pieces\Rook.cs" />
     <Compile Include="Implementations\Square.cs" />
-    <Compile Include="Interfaces\IBoard.cs" />
+    <Compile Include="Implementations\Strategies\ValidSquareStrategies\ValidPawnSquaresStrategy.cs" />
+    <Compile Include="Interfaces\IChessBoardProxy.cs" />
+    <Compile Include="Interfaces\IFactories\IChessMoveStrategyAbstractFactory.cs" />
+    <Compile Include="Interfaces\IFactories\IChessPieceAbstractFactory.cs" />
+    <Compile Include="Interfaces\IFactories\IChessPieceFactory.cs" />
+    <Compile Include="Interfaces\IFactories\IValidSquaresStrategyAbstractFactory.cs" />
     <Compile Include="Interfaces\IMoveResponse.cs" />
     <Compile Include="Interfaces\IPiece.cs" />
+    <Compile Include="Interfaces\IChessMoveStrategy.cs" />
     <Compile Include="Interfaces\ISquare.cs" />
+    <Compile Include="Interfaces\IValidSquaresStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

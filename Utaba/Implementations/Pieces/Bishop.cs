@@ -8,7 +8,7 @@ namespace Utaba.Implementations.Pieces
         public Bishop(ISquare location, Teams team)
             :base(team, location)
         {
-            _whoAmI = PieceType.Bishop;
+            whoAmI = PieceType.Bishop;
         }
 
         public override void Move()

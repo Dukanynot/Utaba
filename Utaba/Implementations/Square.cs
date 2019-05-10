@@ -7,18 +7,14 @@ namespace Utaba.Implementations
     /// </summary>
     internal class Square : ISquare
     {
-        readonly private byte _columnIndex;
-        readonly private byte _row;
-        readonly private SquareColors _myColor;
-        private bool _occupied;
         private static readonly char[] ColumnLetters = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
         public Square(byte columnIndex, byte row, SquareColors myColor)
         {
-            _columnIndex = columnIndex;
-            _row = row;
-            _myColor = myColor;
-            _occupied = false;            
+            ColumnIndex = columnIndex;
+            RowIndex = row;
+            MyColor = myColor;
+            Occupied = false;            
         }
 
         public static int ColumnIndexByChar(char chr)
@@ -42,29 +38,16 @@ namespace Utaba.Implementations
         }
         #region Properties
 
-        public bool Occupied
-        {
-            get { return _occupied; }
-            set { _occupied = value; }
-        }
-        public char ColumnLetter
-        {
-            get { return ColumnCharByIndex(_columnIndex); }
-        }
-        public byte ColumnIndex
-        {
-            get { return _columnIndex; }
-        }
+        public bool Occupied { get; set; }
 
-        public SquareColors MyColor
-        {
-            get { return _myColor; }
-        }
+        public char ColumnLetter => ColumnCharByIndex(ColumnIndex);
 
-        public byte RowIndex
-        {
-            get { return _row; }
-        }
+        public byte ColumnIndex { get; }
+
+        public SquareColors MyColor { get; }
+
+        public byte RowIndex { get; }
+
         #endregion
     }
 }

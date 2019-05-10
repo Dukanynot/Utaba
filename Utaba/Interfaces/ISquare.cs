@@ -2,7 +2,7 @@
 namespace Utaba.Interfaces
 {
     /// <summary>
-    /// Implemented by every square on the Chess Board
+    /// Implemented by every square on the Chess ChessBoard
     /// </summary>
     public interface ISquare
     {

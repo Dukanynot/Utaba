@@ -8,7 +8,7 @@ namespace Utaba.Implementations.Pieces
         public King(ISquare location, Teams team)
             :base(team, location)
         {
-            _whoAmI = PieceType.King;
+            whoAmI = PieceType.King;
         }
 
         public override void Move()

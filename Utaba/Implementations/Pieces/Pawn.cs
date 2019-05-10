@@ -8,7 +8,7 @@ namespace Utaba.Implementations.Pieces
         public Pawn(ISquare location, Teams team)
             :base(team, location)
         {
-            _whoAmI = PieceType.Pawn;
+            whoAmI = PieceType.Pawn;
         }
 
         public override void Move()

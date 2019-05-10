@@ -2,9 +2,8 @@
 {
     public interface IMoveResponse
     {
-        string ErrorMessage { get; }
+        string Message { get; }
         bool SuccessfulMove { get; }
         IPiece PieceCaptured { get; }
-
     }
 }

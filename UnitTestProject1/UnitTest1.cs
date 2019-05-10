@@ -1,49 +1,74 @@
 ﻿using System;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Utaba.Implementations;
-using Utaba.Interfaces;
-using Utaba;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace UnitTestProject1
 {
     [TestClass]
     public class UnitTest1
     {
-        List<IPiece> _listOfPieces;
-
         [TestMethod]
-        public void TestPawnMoves()
+        public void TestBlackPawnCheckMate()
         {
-            
-            var board = new Board();
-            _listOfPieces = board.ListOfPieces;
+            var board =  ChessBoard.Instance;
+            string result = null;
+            using (var reader = new StreamReader(@"..\..\..\KingCheckMateTest_Black.txt"))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var moves = line.Split(new[] {'\t'}, StringSplitOptions.RemoveEmptyEntries);
+                    Console.Write($"Sending {moves[0]}");
+                    var imr = board.RequestMove(moves[0]);
+                    Console.WriteLine($"\t{imr.Message}");
+                   
 
-            var wp1 = GetPiece(4, 1);
-            var bp1 = GetPiece(0, 6);
+                    if (moves.Length == 2)
+                    {
+                        Console.Write($"Sending {moves[1]}");
+                        var ir = board.RequestMove(moves[1]);
+                        Console.WriteLine($"\t{ir.Message}");
+                        result = ir.Message;
+                    }
 
-            board.RequestMove(wp1, "e4");
-            var mr = board.RequestMove(bp1, "a6");
-            board.RequestMove(bp1, "a5");
-            //board.RequestMove(bp1, "g4");
-            //board.RequestMove(bp1, "g3");
-            //board.RequestMove(bp1, "f2");
-            // board.RequestMove(bp1, "b1");
+                    Console.WriteLine();
 
-
-
-            //  board.RequestMove(bp1, "b5");
-
-
-            Assert.IsTrue(mr != null && mr.SuccessfulMove);
-            
+                }
+            }
+            Assert.IsTrue(result != null && result.Contains("Black has won the game"));
         }
 
-        private IPiece GetPiece(byte col,byte row)
+        [TestMethod]
+        public void TestEnpassant()
         {
-            return _listOfPieces
-                .Where(p => p.MyLocation.ColumnIndex == col && p.MyLocation.RowIndex == row).Single();
+            var board = ChessBoard.Instance;
+            string result = null;
+            using (var reader = new StreamReader(@"..\..\..\EnpassantMoves.txt"))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var moves = line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    Console.Write($"Sending {moves[0]}");
+                    var imr = board.RequestMove(moves[0]);
+                    Console.WriteLine($"\t{imr.Message}");
+                    result = imr.Message;
+
+
+                    if (moves.Length == 2)
+                    {
+                        Console.Write($"Sending {moves[1]}");
+                        var ir = board.RequestMove(moves[1]);
+                        Console.WriteLine($"\t{ir.Message}");
+                        result = ir.Message;
+                    }
+
+                    Console.WriteLine();
+
+                }
+            }
+            Assert.IsTrue(result != null && result.Contains("en passant square"));
         }
     }
 }

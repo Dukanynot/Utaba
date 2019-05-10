@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using Utaba.Interfaces;
-using Utaba.Implementations;
-using Utaba;
-
+﻿using Utaba.Implementations;
 
 namespace UtabaUI
 {
     class Program
     {
-       // static private List<ISquare> _listofSquares;
-        static private List<IPiece> _listOfPieces;
-        static void Main(string[] args)
+        static void Main()
         {
-            var board = new Board();
-            _listOfPieces = board.ListOfPieces;
+            var board = ChessBoard.Instance;
         }
     }
 }
