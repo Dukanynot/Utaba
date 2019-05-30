@@ -6,7 +6,7 @@ namespace Utaba.Interfaces
     /// </summary>
     public interface IPiece
     {
-        void Move();
+        IMoveResponse Move(ISquare destSquare, CommandType cmdType);
 
         Teams MyTeam { get;}
 

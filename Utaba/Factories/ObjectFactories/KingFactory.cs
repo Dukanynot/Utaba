@@ -7,10 +7,10 @@ namespace Utaba.Factories.ObjectFactories
 {
     class KingFactory : IChessPieceFactory
     {
-        private static readonly Lazy<KingFactory> _kingFactory = new Lazy<KingFactory>(() => new KingFactory());
+        private static readonly Lazy<KingFactory> LazyKingFactory = new Lazy<KingFactory>(() => new KingFactory());
         private KingFactory() { }
 
-        public static KingFactory Singleton = _kingFactory.Value;
+        public static KingFactory Singleton = LazyKingFactory.Value;
         public IPiece GetChessPiece(ISquare square, Teams team)
         {
             return new King(square, team);

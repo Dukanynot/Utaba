@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Utaba.Implementations.Strategies.MoveStrategies;
 using Utaba.Interfaces;
 
 namespace Utaba.Implementations.Pieces
@@ -11,9 +11,9 @@ namespace Utaba.Implementations.Pieces
             whoAmI = PieceType.Pawn;
         }
 
-        public override void Move()
+        public override IMoveResponse Move(ISquare destSquare, CommandType cmdType)
         {
-            throw new NotImplementedException();
+            return PawnMoveStrategy.Singleton.HandleMove(this, this.Location, destSquare);
         }
 
         public bool HasMoved { get; set; }

@@ -11,7 +11,8 @@ namespace Utaba.Implementations.Strategies.MoveStrategies
         private readonly IChessBoardProxy _chessBoardProxy;
         private static readonly Lazy<PawnMoveStrategy> LazyPawnMoveHandler = new Lazy<PawnMoveStrategy>(() => 
             new PawnMoveStrategy(ChessBoardProxy.Singleton));
-        public static PawnMoveStrategy Instance => LazyPawnMoveHandler.Value;
+
+        public static PawnMoveStrategy Singleton => LazyPawnMoveHandler.Value;
 
         private PawnMoveStrategy(IChessBoardProxy chessBoardProxy)
         {

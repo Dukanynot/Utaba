@@ -11,7 +11,7 @@ namespace Utaba.Implementations.Pieces
             whoAmI = PieceType.Rook;
         }
 
-        public override void Move()
+        public override IMoveResponse Move(ISquare destSquare, CommandType cmdType)
         {
             throw new NotImplementedException();
         }

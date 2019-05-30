@@ -16,7 +16,7 @@ namespace Utaba.Implementations.Pieces
             Status = PieceStatus.Active;
         }
         // each piece should implement its move
-        public abstract void Move();
+        public abstract IMoveResponse Move(ISquare destSquare, CommandType cmdType);
 
         #region Properties
 

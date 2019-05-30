@@ -2,36 +2,32 @@
 using System.Collections.Generic;
 using System.Linq;
 using Utaba.Interfaces;
-using Utaba.Implementations.Pieces;
-using System.Text.RegularExpressions;
 using Utaba.Factories.AbstractFactories;
-using Utaba.Implementations.Proxies;
+using Utaba.Factories.ObjectFactories;
 using Utaba.Interfaces.IFactories;
 
 namespace Utaba.Implementations
 {
     public sealed class ChessBoard 
     {
-        private List<ISquare> _listofSquares;
-        private List<IPiece> _listofPieces;
-
         private Teams _whosMove;
 
         private const byte NumberOfSquares = 64;
         private const byte MaxNumberOfPieces = 32;
-        private readonly IChessMoveStrategyAbstractFactory _chessMoveStrategyAbstractFactory;
+
         private readonly IChessPieceAbstractFactory _chesssPieceAbstractFactory;
+        private readonly ISquareFactory _squareFactory;
 
         private static readonly Lazy<ChessBoard> Board = new Lazy<ChessBoard>(() =>
-            new ChessBoard(ChessMoveStrategyAbstractFactory.Singleton, ChessPieceAbstractFactory.Singleton));
+            new ChessBoard(ChessPieceAbstractFactory.Singleton, SquareFactory.Singleton));
 
         #region Constructor
-        private ChessBoard(IChessMoveStrategyAbstractFactory chessMoveStrategyAbstractFactory, IChessPieceAbstractFactory chesssPieceAbstractFactory)
+        private ChessBoard(IChessPieceAbstractFactory chesssPieceAbstractFactory, ISquareFactory squareFactory)
         {
             // team white starts first in a standard game of chess
             _whosMove = Teams.White;
-            _chessMoveStrategyAbstractFactory = chessMoveStrategyAbstractFactory;
             _chesssPieceAbstractFactory = chesssPieceAbstractFactory;
+            _squareFactory = squareFactory;
 
             InitializeSquares();
             InitializePieces();
@@ -39,49 +35,16 @@ namespace Utaba.Implementations
         #endregion
 
         #region Public Methods
-        public IMoveResponse RequestMove(string destination)
+        public IMoveResponse RequestMove(string notation)
         {
-            IMoveResponse imr = null;
+            IMoveResponse imr;
 
             try
             {
-                // only make a move if it is the right team's turn
-
-                // checks to make sure the destination is in the right 
-                // chess notation
                 // TODO: Really have to integrate with a GUI that uses standard notation / PGN
-                if (destination.Length == 2
-                    && Regex.IsMatch(destination, @"[a-hA-H]{1}[1-8]{1}"))
-                {
-                    int destinationColumn = Square.ColumnIndexByChar(destination[0]);
-                    int destinationRow = int.Parse(destination.Substring(1, 1));
-
-                    // get the actual square this string destination represents
-                    var destSquare = GetSquares(s => s.ColumnIndex == destinationColumn
-                                                     && s.RowIndex == destinationRow - 1).Single();
-
-                    // TODO convert this to strategy pattern
-                    var piece = GetPawnForThisSquare(destSquare, _whosMove);
-
-                    if (piece?.MyTeam == _whosMove)
-                    {
-                        var moveStrategy = _chessMoveStrategyAbstractFactory.GetChessMoveStrategy(piece);
-                        imr = moveStrategy.HandleMove(piece, piece.MyLocation, destSquare);
-                    }
-                    else
-                    {
-                        imr = new MoveResponse
-                        {
-                            SuccessfulMove = false,
-                            Message = "Invalid Move!!!"
-                        };
-                    }
-                }
-                else
-                {
-                    throw new Exception("Can't pass me a null Chess Piece\n Also check the destination notation");
-                }
-
+                var strategy = ChessNotationAbstractFactory.Singleton.GetChessNotationStrategy(notation);
+                var cmd = strategy.CreateCommand(notation, _whosMove);
+                imr = cmd.Execute();
             }
             catch (Exception ex)
             {
@@ -95,9 +58,9 @@ namespace Utaba.Implementations
         #endregion
 
         #region Properties
-        public List<ISquare> ListOfSquares => _listofSquares;
+        public List<ISquare> ListOfSquares { get; private set; }
 
-        public List<IPiece> ListOfPieces => _listofPieces;
+        public List<IPiece> ListOfPieces { get; private set; }
 
         public static ChessBoard Instance => Board.Value;
 
@@ -105,42 +68,9 @@ namespace Utaba.Implementations
 
         #region Private Methods
 
-        /// <summary>
-        /// Returns a pawn that can move into the square given
-        /// </summary>
-        /// <param name="square"></param>
-        /// <param name="team"></param>
-        /// <returns></returns>
-        private IPiece GetPawnForThisSquare(ISquare square, Teams team)
-        {
-            // get the list of pawns for this team
-            var listOfPawns = ChessBoardProxy.Singleton.GetPieces(p => p.MyTeam == team && 
-                                                                        p.WhoAmI == PieceType.Pawn &&
-                                                                        p.MyStatus == PieceStatus.Active).ToList();
-            bool isOk = true;
-            IPiece pawnToMove = null;
-
-            // for every pawn returned...
-            for (int i = 0; isOk && i < listOfPawns.Count; i++)
-            {
-                if (listOfPawns[i] is Pawn pawn)
-                {
-                    // ... get all the valid squares it can go to
-                    var listofSquares = ChessBoardProxy.Singleton.GetValidSquares(pawn);
-                    if (listofSquares.Contains(square))
-                    {
-                        isOk = false;
-                        pawnToMove = pawn;
-                    }
-                }
-
-            }
-            return pawnToMove;
-        }
-
         public IEnumerable<ISquare> GetSquares(Func<ISquare, bool> query)
         {
-            return _listofSquares.Where(query);
+            return ListOfSquares.Where(query);
         }
         #region Initialization Code
         /// <summary>
@@ -148,7 +78,7 @@ namespace Utaba.Implementations
         /// </summary>
         private void InitializePieces()
         {
-            _listofPieces = new List<IPiece>(MaxNumberOfPieces);
+            ListOfPieces = new List<IPiece>(MaxNumberOfPieces);
             InitializePawns();
             InitializeRooks();
             InitializeKnights();
@@ -228,7 +158,7 @@ namespace Utaba.Implementations
             {
                 square.Occupied = true;
                 IPiece piece = _chesssPieceAbstractFactory.GetChessPiece(team, square, pieceType);
-                _listofPieces.Add(piece);
+                ListOfPieces.Add(piece);
             }
         }
 
@@ -237,7 +167,7 @@ namespace Utaba.Implementations
         /// </summary>
         private void InitializeSquares()
         {
-            _listofSquares = new List<ISquare>(NumberOfSquares);
+            ListOfSquares = new List<ISquare>(NumberOfSquares);
             bool colorDark = true;
 
             // initialize all 64 squares
@@ -248,9 +178,8 @@ namespace Utaba.Implementations
                     var sqClr = colorDark ? (SquareColors)Enum.Parse(typeof(SquareColors), "1") :
                     (SquareColors)Enum.Parse(typeof(SquareColors), "0");
 
-                    // TODO: add a square factory
-                    var sq = new Square(col, row, sqClr);
-                    _listofSquares.Add(sq);
+                    var sq = _squareFactory.GetSquare(col, row, sqClr);
+                    ListOfSquares.Add(sq);
 
                     // ensures every cell alternates in color 
                     if (row != 7)
@@ -262,6 +191,5 @@ namespace Utaba.Implementations
         }
         #endregion
         #endregion
-
     }
 }

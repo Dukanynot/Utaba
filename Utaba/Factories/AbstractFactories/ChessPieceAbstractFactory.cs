@@ -5,17 +5,19 @@ using Utaba.Interfaces.IFactories;
 
 namespace Utaba.Factories.AbstractFactories
 {
+    /// <summary>
+    /// Returns a chess piece
+    /// </summary>
     class ChessPieceAbstractFactory : IChessPieceAbstractFactory
     {
-        private static readonly Lazy<ChessPieceAbstractFactory> _chessPieceAbstractFactory = new Lazy<ChessPieceAbstractFactory>(() => 
+        private static readonly Lazy<ChessPieceAbstractFactory> LazyChessPieceAbstractFactory = new Lazy<ChessPieceAbstractFactory>(() => 
             new ChessPieceAbstractFactory());
         private ChessPieceAbstractFactory() { }
 
-        public static ChessPieceAbstractFactory Singleton => _chessPieceAbstractFactory.Value;
+        public static ChessPieceAbstractFactory Singleton => LazyChessPieceAbstractFactory.Value;
 
         public IPiece GetChessPiece(Teams team, ISquare square, PieceType pieceType)
         {
-            // TODO possibly create individual factories for each piece type
             IPiece chessPiece;
             switch (pieceType)
             {

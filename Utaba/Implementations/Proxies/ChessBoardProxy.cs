@@ -321,6 +321,65 @@ namespace Utaba.Implementations.Proxies
             return isCheckMate;
         }
 
+        public IPiece GetPieceForThisSquare(ISquare square, Teams team, PieceType pieceType)
+        {
+            IPiece piece = null;
+
+            // TODO strategy pattern
+            switch (pieceType)
+            {
+                case PieceType.King:
+                    break;
+                case PieceType.Queen:
+                    break;
+                case PieceType.Bishop:
+                    break;
+                case PieceType.Knight:
+                    break;
+                case PieceType.Rook:
+                    break;
+                case PieceType.Pawn:
+                    piece = GetPawnForThisSquare(square, team);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+            }
+
+            return piece;
+        }
+
+        /// <summary>
+        /// Returns a pawn that can move into the square given
+        /// </summary>
+        /// <param name="square"></param>
+        /// <param name="team"></param>
+        /// <returns></returns>
+        private IPiece GetPawnForThisSquare(ISquare square, Teams team)
+        {
+            // get the list of pawns for this team
+            var listOfPawns = ChessBoardProxy.Singleton.GetPieces(p => p.MyTeam == team &&
+                                                                       p.WhoAmI == PieceType.Pawn &&
+                                                                       p.MyStatus == PieceStatus.Active).ToList();
+            bool isOk = true;
+            IPiece pawnToMove = null;
+
+            // for every pawn returned...
+            for (int i = 0; isOk && i < listOfPawns.Count; i++)
+            {
+                if (listOfPawns[i] is Pawn pawn)
+                {
+                    // ... get all the valid squares it can go to
+                    var listofSquares = ChessBoardProxy.Singleton.GetValidSquares(pawn);
+                    if (listofSquares.Contains(square))
+                    {
+                        isOk = false;
+                        pawnToMove = pawn;
+                    }
+                }
+            }
+            return pawnToMove;
+        }
+
         /// <summary>
         /// Checks the locations specified to see if all squares can be attacked
         /// </summary>

@@ -34,4 +34,12 @@
         Rook,
         Pawn
     }
+
+    public enum CommandType : byte
+    {
+        MoveCommand = 0,
+        CaptureCommand,
+        CastleCommand,
+        PromotionCommand,
+    }
 }

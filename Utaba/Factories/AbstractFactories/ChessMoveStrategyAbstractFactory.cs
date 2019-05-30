@@ -30,7 +30,7 @@ namespace Utaba.Factories.AbstractFactories
                 case PieceType.Rook:
                     break;
                 case PieceType.Pawn:
-                    moveStrategy = PawnMoveStrategy.Instance;
+                    moveStrategy = PawnMoveStrategy.Singleton;
                     break;
             }
             return moveStrategy;

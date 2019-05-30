@@ -6,7 +6,7 @@ namespace UtabaUI
     {
         static void Main()
         {
-            var board = ChessBoard.Instance;
+            
         }
     }
 }
