@@ -20,14 +20,15 @@ namespace Utaba.Factories.AbstractFactories
         public IChessNotationStrategy GetChessNotationStrategy(string notation)
         {
             IChessNotationStrategy strategy = null;
+
             // TODO: Move these to Factories
             if (Regex.IsMatch(notation,MovePattern))
             {
-                strategy = new ChessNotationMoveStrategy();
+                strategy = new ChessNotationMoveStrategy(notation);
             }
             else if (Regex.IsMatch(notation,CapturePattern))
             {
-                strategy = new ChessNotationCaptureStrategy();
+                strategy = new ChessNotationCaptureStrategy(notation);
             }
             // TODO: Castling and Promotion strategy
 

@@ -14,9 +14,9 @@ namespace Utaba.Factories.AbstractFactories
 
         public static ChessMoveStrategyAbstractFactory Singleton => LazyChessMoveStrategyAbstractFactory.Value;
 
-        public IChessMoveStrategy GetChessMoveStrategy(IPiece piece)
+        public IHandleChessCommand GetChessMoveStrategy(IPiece piece, ISquare destSquare)
         {
-            IChessMoveStrategy moveStrategy = null;
+            IHandleChessCommand moveStrategy = null;
             switch (piece.WhoAmI)
             {
                 case PieceType.King:
@@ -30,7 +30,7 @@ namespace Utaba.Factories.AbstractFactories
                 case PieceType.Rook:
                     break;
                 case PieceType.Pawn:
-                    moveStrategy = PawnMoveStrategy.Singleton;
+                    moveStrategy = new ChessPieceMoveStrategy(piece,destSquare);
                     break;
             }
             return moveStrategy;

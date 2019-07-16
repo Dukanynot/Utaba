@@ -3,6 +3,6 @@ namespace Utaba.Interfaces.IFactories
 {
     interface IChessMoveStrategyAbstractFactory
     {
-        IChessMoveStrategy GetChessMoveStrategy(IPiece piece);
+        IHandleChessCommand GetChessMoveStrategy(IPiece piece,ISquare destSquare);
     }
 }

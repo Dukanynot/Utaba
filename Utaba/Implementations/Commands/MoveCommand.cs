@@ -1,4 +1,5 @@
-﻿using Utaba.Interfaces;
+﻿using Utaba.Implementations.Proxies;
+using Utaba.Interfaces;
 
 namespace Utaba.Implementations.Commands
 {
@@ -15,7 +16,8 @@ namespace Utaba.Implementations.Commands
 
         public IMoveResponse Execute()
         {
-            return _primaryPiece.Move(_destSquare,CommandType.MoveCommand);
+            ChessBoardProxy.Singleton.RemoveEnpassant(_primaryPiece);
+            return _primaryPiece.Move(_destSquare);
         }
     }
 }

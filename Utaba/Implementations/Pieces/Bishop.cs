@@ -11,7 +11,7 @@ namespace Utaba.Implementations.Pieces
             whoAmI = PieceType.Bishop;
         }
 
-        public override IMoveResponse Move(ISquare destSquare, CommandType cmdType)
+        public override IMoveResponse Move(ISquare destSquare)
         {
             throw new NotImplementedException();
         }

@@ -1,3 +1,5 @@
 h3	d5
 h4	d4
-e4
+e4	dxe3
+c4	b5
+cxb5

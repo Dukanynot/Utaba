@@ -2,6 +2,7 @@
 {
     interface IChessNotationStrategy
     {
-        IChessCommand CreateCommand(string notation, Teams whosMove);
+        IChessCommand CreateCommand( Teams whosMove);
+        string Notation { get; set; }
     }
 }

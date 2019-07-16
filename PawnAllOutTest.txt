@@ -1,0 +1,13 @@
+e4	a5
+f4	a4
+b4	h6
+b5	c5
+bxc6	bxc6
+g4	e5
+fxe5	d5
+c4	dxe4
+a3	c5
+g5	hxg5
+h4	gxh4
+d4	exd3
+e6	fxe6

@@ -41,10 +41,12 @@ namespace Utaba.Implementations
 
             try
             {
-                // TODO: Really have to integrate with a GUI that uses standard notation / PGN
-                var strategy = ChessNotationAbstractFactory.Singleton.GetChessNotationStrategy(notation);
-                var cmd = strategy.CreateCommand(notation, _whosMove);
+                IChessNotationStrategy strategy = ChessNotationAbstractFactory.Singleton.GetChessNotationStrategy(notation);
+                IChessCommand cmd = strategy.CreateCommand(_whosMove);
+
                 imr = cmd.Execute();
+                // TODO Undo command if certain conditions fail
+                // TODO Remove an en passant squares after every command unless the move assigned the en passant in the first place
             }
             catch (Exception ex)
             {
@@ -52,7 +54,9 @@ namespace Utaba.Implementations
                 throw;
             }
 
+            if (imr.SuccessfulMove)
             _whosMove = _whosMove == Teams.White ? Teams.Black : Teams.White;
+
             return imr;
         }
         #endregion

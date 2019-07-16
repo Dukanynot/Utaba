@@ -53,17 +53,32 @@ namespace Utaba.Implementations.Strategies.ValidSquareStrategies
                     }
                 }
 
-                // now check for capture squares occupied by enemy forces
-                var captureSquares = _chessBoardProxy.GetSquares(s => (s.ColumnIndex == pawn.MyLocation.ColumnIndex - 1
-                                                && s.RowIndex == pawn.MyLocation.RowIndex + forwardToken
-                                                && s.Occupied && _chessBoardProxy.WhosOnThisSquare(s)?.MyTeam == enemyColor)
-                                                || (s.ColumnIndex == pawn.MyLocation.ColumnIndex + 1
-                                                && s.RowIndex == pawn.MyLocation.RowIndex + forwardToken
-                                                && s.Occupied && _chessBoardProxy.WhosOnThisSquare(s)?.MyTeam == enemyColor));
+                // now check for capture squares occupied by enemy forces 
+                var captureSquares = _chessBoardProxy.GetSquares(s =>
+                    (s.ColumnIndex == pawn.MyLocation.ColumnIndex - 1 ||
+                     s.ColumnIndex == pawn.MyLocation.ColumnIndex + 1)
+                    && s.RowIndex == pawn.MyLocation.RowIndex + forwardToken
+                    && s.Occupied && _chessBoardProxy.WhosOnThisSquare(s)?.MyTeam == enemyColor);
+                                                
                 listofValidSquares.AddRange(captureSquares);
 
-                // TODO: Check for en pessant squares
+                // check for en passant squares
+                var enpPawn = _chessBoardProxy.GetPieces(p => p.WhoAmI == PieceType.Pawn && 
+                                                           p.MyTeam == enemyColor && 
+                                                           ((Pawn) p).EnPassantSquare != null).SingleOrDefault();
+                if (enpPawn != null && enpPawn is Pawn enp)
+                {
+                    var enpassantSquare = _chessBoardProxy.GetSquares(s =>
+                        (s.ColumnIndex == pawn.MyLocation.ColumnIndex - 1 ||
+                         s.ColumnIndex == pawn.MyLocation.ColumnIndex + 1)
+                        && s.RowIndex == pawn.MyLocation.RowIndex + forwardToken
+                        && enp.EnPassantSquare.Equals(s)).SingleOrDefault();
 
+                    if (enpassantSquare != null)
+                    {
+                        listofValidSquares.Add(enpassantSquare);
+                    }
+                }
             }
             return listofValidSquares;
         }

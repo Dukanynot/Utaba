@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using Utaba.Factories.AbstractFactories;
 using Utaba.Implementations.Pieces;
 using Utaba.Interfaces;
@@ -236,7 +237,7 @@ namespace Utaba.Implementations.Proxies
             int forwardToken = team == Teams.White ? 1 : -1;
             Teams enemyColor = team == Teams.White ? Teams.Black : Teams.White;
 
-            var canAttack = GetPieces(p => p.WhoAmI == PieceType.Pawn && p.MyTeam == enemyColor && p.MyStatus == PieceStatus.Active
+            bool canAttack = GetPieces(p => p.WhoAmI == PieceType.Pawn && p.MyTeam == enemyColor && p.MyStatus == PieceStatus.Active
                                                                        && p.MyLocation.RowIndex == square.RowIndex + forwardToken
                                                                        && ((p.MyLocation.ColumnIndex == square.ColumnIndex - 1)
                                                                            || (p.MyLocation.ColumnIndex == square.ColumnIndex + 1))).Any();
@@ -349,6 +350,25 @@ namespace Utaba.Implementations.Proxies
         }
 
         /// <summary>
+        /// Returns a pawn that can attack a given square
+        /// </summary>
+        /// <param name="square"></param>
+        /// <param name="team"></param>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        public IPiece GetPawnThatCanAttack(ISquare square, Teams team, char column)
+        {
+            int forwardToken = team == Teams.White ? 1 : -1;
+
+            var pawn = GetPieces(p => p.WhoAmI == PieceType.Pawn && p.MyTeam == team && p.MyStatus == PieceStatus.Active
+                                      && p.MyLocation.ColumnLetter == column
+                                      && p.MyLocation.RowIndex == square.RowIndex - forwardToken
+                                      && ((p.MyLocation.ColumnIndex == square.ColumnIndex - 1)
+                                          || (p.MyLocation.ColumnIndex == square.ColumnIndex + 1))).SingleOrDefault();
+            return pawn;
+        }
+
+        /// <summary>
         /// Returns a pawn that can move into the square given
         /// </summary>
         /// <param name="square"></param>
@@ -357,8 +377,7 @@ namespace Utaba.Implementations.Proxies
         private IPiece GetPawnForThisSquare(ISquare square, Teams team)
         {
             // get the list of pawns for this team
-            var listOfPawns = ChessBoardProxy.Singleton.GetPieces(p => p.MyTeam == team &&
-                                                                       p.WhoAmI == PieceType.Pawn &&
+            var listOfPawns = GetPieces(p => p.MyTeam == team && p.WhoAmI == PieceType.Pawn &&
                                                                        p.MyStatus == PieceStatus.Active).ToList();
             bool isOk = true;
             IPiece pawnToMove = null;
@@ -369,7 +388,7 @@ namespace Utaba.Implementations.Proxies
                 if (listOfPawns[i] is Pawn pawn)
                 {
                     // ... get all the valid squares it can go to
-                    var listofSquares = ChessBoardProxy.Singleton.GetValidSquares(pawn);
+                    var listofSquares = GetValidSquares(pawn);
                     if (listofSquares.Contains(square))
                     {
                         isOk = false;
@@ -416,6 +435,28 @@ namespace Utaba.Implementations.Proxies
         {
             var strategy = _validSquaresStrategyAbstractFactory.GetValidSquaresStrategy(piece);
             return strategy.GetValidSquares(piece);
+        }
+
+        /// <summary>
+        /// Removes enpassant status on all the pawns except the one in the argument
+        /// </summary>
+        /// <param name="piece"></param>
+        public void RemoveEnpassant(IPiece piece)
+        {
+            var listOfPawns = GetPieces(p => p.WhoAmI == PieceType.Pawn &&  ((Pawn) p).EnPassantSquare != null && p != piece);
+            foreach (var p in listOfPawns)
+            {
+                if (p is Pawn pwn )
+                {
+                    pwn.EnPassantSquare = null;
+                }
+            }
+        }
+
+        public bool IsItAValidSquare(IPiece piece, ISquare square)
+        {
+            var listofSquares = GetValidSquares(piece);
+            return listofSquares.Contains(square);
         }
 
         public IEnumerable<ISquare> GetSquares(Func<ISquare, bool> query)

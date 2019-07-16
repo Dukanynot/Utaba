@@ -1,4 +1,5 @@
-﻿using Utaba.Interfaces;
+﻿using Utaba.Implementations.Strategies.MoveStrategies;
+using Utaba.Interfaces;
 
 namespace Utaba.Implementations.Pieces
 {
@@ -15,8 +16,18 @@ namespace Utaba.Implementations.Pieces
             Location = location;
             Status = PieceStatus.Active;
         }
-        // each piece should implement its move
-        public abstract IMoveResponse Move(ISquare destSquare, CommandType cmdType);
+
+        public virtual IMoveResponse Move(ISquare destSquare)
+        {
+            var strategy = new ChessPieceMoveStrategy(this,destSquare);
+            return strategy.HandleCommand();
+        }
+
+        public virtual IMoveResponse Capture(IPiece capturedPiece, ISquare capturedSquare)
+        {
+            var strategy = new ChessPieceCaptureStrategy(this, capturedPiece,capturedSquare);
+            return strategy.HandleCommand();
+        }
 
         #region Properties
 

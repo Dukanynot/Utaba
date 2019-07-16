@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,11 +56,13 @@
     <Compile Include="Factories\ObjectFactories\RookFactory.cs" />
     <Compile Include="Factories\ObjectFactories\SquareFactory.cs" />
     <Compile Include="Implementations\ChessBoard.cs" />
+    <Compile Include="Implementations\Commands\CaptureCommand.cs" />
     <Compile Include="Implementations\Commands\MoveCommand.cs" />
     <Compile Include="Implementations\Proxies\ChessBoardProxy.cs" />
     <Compile Include="Implementations\Strategies\ChessNotationStrategies\ChessNotationCaptureStrategy.cs" />
     <Compile Include="Implementations\Strategies\ChessNotationStrategies\ChessNotationMoveStrategy.cs" />
-    <Compile Include="Implementations\Strategies\MoveStrategies\PawnMoveStrategy.cs" />
+    <Compile Include="Implementations\Strategies\MoveStrategies\ChessPieceCaptureStrategy.cs" />
+    <Compile Include="Implementations\Strategies\MoveStrategies\ChessPieceMoveStrategy.cs" />
     <Compile Include="Implementations\MoveResponse.cs" />
     <Compile Include="Implementations\Pieces\Bishop.cs" />
     <Compile Include="Implementations\Pieces\ChessPiece.cs" />
@@ -79,12 +84,14 @@
     <Compile Include="Interfaces\IFactories\IValidSquaresStrategyAbstractFactory.cs" />
     <Compile Include="Interfaces\IMoveResponse.cs" />
     <Compile Include="Interfaces\IPiece.cs" />
-    <Compile Include="Interfaces\IChessMoveStrategy.cs" />
+    <Compile Include="Interfaces\IHandleChessCommand.cs" />
     <Compile Include="Interfaces\ISquare.cs" />
     <Compile Include="Interfaces\IValidSquaresStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
